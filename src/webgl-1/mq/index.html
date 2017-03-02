@@ -1,11 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-    <script type="text/javascript" src="../../three.js"></script>
+    <title>mq-webgl-1</title>
+    <script type="text/javascript" src="../../public/js/three.js"></script>
 </head>
-<body>
 
+<body>
+    <canvas id="mainCanvas" width="800px" height="600px"></canvas>
+    <script>
+        (function () {
+
+            // scene
+            var scene = new THREE.Scene();
+
+            // create a camera
+            var camera = new THREE.PerspectiveCamera(45, 4 / 3, 1, 1000);
+            camera.position.set(21, 10, 15);
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
+            scene.add(camera);
+
+            // create a render
+            var renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('mainCanvas'),
+                antialias: true, //反锯齿
+            });
+            renderer.setClearColor(0x666666);
+
+            var material = new THREE.MeshLambertMaterial({
+                color: 0xffffff,
+                // wireframe: true
+            });
+
+            // show axes in the screen
+            var axes = new THREE.AxisHelper(20);
+            scene.add(axes);
+
+            // create a cube
+            var cubeGeometry = new THREE.BoxGeometry(10, 5, 5);
+            var cube = new THREE.Mesh(cubeGeometry, material);
+            scene.add(cube);
+
+            // wheel
+            var torus1 = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.5, 12, 18), material);
+            var torus2 = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.5, 12, 18), material);
+            torus1.position.set(-3, -2.5, 2.3);
+            torus2.position.set(3, -2.5, 2.3);
+            scene.add(torus1);
+            scene.add(torus2);
+
+            // add light
+            var ambientLight = new THREE.AmbientLight(0x666666); 
+            scene.add(ambientLight);
+
+            var light = new THREE.DirectionalLight(0x989898);
+            light.position.set(2, 5, 3);
+            scene.add(light);
+
+            renderer.render(scene, camera);
+        })()
+    </script>
 </body>
+
 </html>

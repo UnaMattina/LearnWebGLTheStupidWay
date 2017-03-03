@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>mq-webgl-2</title>
+  <script type="text/javascript" src="../../public/js/three.js"></script>
+</head>
+
+<body>
+  <canvas id="mainCanvas" width="800px" height="600px"></canvas>
+  <script>
+    (function () {
+      // scene
+      const scene = new THREE.Scene();
+
+      // create a camera
+      //  fov, aspect, near, far
+      const camera = new THREE.PerspectiveCamera(40, 4 / 3, 5, 2000);
+      const cameraPosition = [22, 10, 25];
+      camera.position.set(...cameraPosition);
+      camera.lookAt(new THREE.Vector3(0, 0, 0));
+      scene.add(camera);
+
+      // create a render
+      const renderer = new THREE.WebGLRenderer({
+        canvas: document.getElementById('mainCanvas'),
+        antialias: true, //反锯齿
+      });
+      renderer.setClearColor(0x666666);
+      renderer.shadowMap.enabled = true;
+      // renderer.shadowMapSoft = true;
+
+      var carTexture = THREE.ImageUtils.loadTexture('./img/test.jpg', {}, function () {
+        renderer.render(scene, camera);
+      });
+      const carMaterial = new THREE.MeshLambertMaterial({
+        map: carTexture
+        // wireframe: true
+      });
+
+      var wheelTexture = THREE.ImageUtils.loadTexture('./img/6.jpeg', {}, function () {
+        renderer.render(scene, camera);
+      });
+      const wheelMaterial = new THREE.MeshLambertMaterial({
+        map: wheelTexture
+        // wireframe: true
+      });
+
+      // show axes in the screen
+      const axes = new THREE.AxisHelper(20);
+      scene.add(axes);
+
+      // create a cube
+      const cubeGeometry = new THREE.BoxGeometry(10, 5, 5);
+      const cube = new THREE.Mesh(cubeGeometry, carMaterial);
+      cube.castShadow = true;
+      scene.add(cube);
+
+      // wheel
+      const wheelPosition = [[-3, -2.5, 2.3], [3, -2.5, 2.3], [-3, -2.5, -2.3], [3, -2.5, -2.3]];
+      wheelPosition.forEach((pos) => {
+        let torus = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.5, 120, 180), wheelMaterial);
+        torus.position.set(...pos);
+        torus.castShadow = true;
+        scene.add(torus);
+      })
+
+      // plane
+      const planeGeometry = new THREE.PlaneGeometry(80, 50);
+      const planeMaterial = new THREE.MeshLambertMaterial({
+        color: 0xD1ED98,
+        // wireframe: true
+      });
+      const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+      // 弧度制
+      plane.rotation.set(-90 * Math.PI / 180, 0, 0)
+      plane.position.set(0, -3.8, 0)
+      plane.receiveShadow = true;
+      scene.add(plane);
+
+      // add light
+      const ambientLight = new THREE.AmbientLight(0x666666);
+      scene.add(ambientLight);
+
+      var light = new THREE.SpotLight(0x7f7f7f);
+      light.position.set(-4, 11, 13);
+      light.castShadow = true;
+
+      light.shadow.mapSize.width = 4096;
+      light.shadow.mapSize.height = 4096;
+
+      scene.add(light);
+
+      var spotLightHelper = new THREE.SpotLightHelper(light);
+      scene.add(spotLightHelper);
+
+      renderer.render(scene, camera);
+    })()
+  </script>
+</body>
+
+</html>

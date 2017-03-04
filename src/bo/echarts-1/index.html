@@ -4,12 +4,33 @@
 <head>
   <meta charset="UTF-8">
   <title>零基础绘制ECharts图表</title>
+  <link type="text/css" rel="stylesheet" href="../../public/css/materialize.min.css" media="screen,projection" />
   <script type="text/javascript" src="../../public/js/echarts.js"></script>
+  <style>
+    .target {
+      width: 600px;
+      height: 400px;
+    }
+  </style>
 </head>
 
 <body>
-  <p><a href="../../../index.html">目录页</a></p>
-  <div id="main" style="width: 600px;height:400px;"></div>
+  <nav class="blue-grey">
+    <div class="nav-wrapper">
+      <a href="../../../index.html" class="brand-logo center">ECharts & WebVR 学院学习记录</a>
+    </div>
+  </nav>
+  <p></p>
+  <div class="container">
+    <div class="row">
+      <div class="col s2">
+        <a href="../../../index.html" class="waves-effect waves-light btn blue-grey darken-1">回到首页</a>
+      </div>
+      <div class="col s10">
+        <div id="main" class="target"></div>
+      </div>
+    </div>
+  </div>
   <script type="text/javascript" src="echarts-1.js"></script>
 </body>
 

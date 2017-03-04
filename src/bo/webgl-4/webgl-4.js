@@ -1,7 +1,7 @@
 function init () {
   const scene = new THREE.Scene()
 
-  const camera = new THREE.PerspectiveCamera(60, 4 / 3, 1, 1000)
+  const camera = new THREE.PerspectiveCamera(60, 3 / 2, 1, 1000)
   camera.position.set(0, 0, 30)
   camera.lookAt(new THREE.Vector3(0, 0, 0))
   scene.add(camera)
@@ -137,3 +137,4 @@ function init () {
   render()
   animate()
 }
+

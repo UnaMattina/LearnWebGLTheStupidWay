@@ -4,7 +4,7 @@ function init () {
   const axes = new THREE.AxisHelper(30)
   scene.add(axes)
 
-  const camera = new THREE.PerspectiveCamera(60, 4 / 3, 1, 1000)
+  const camera = new THREE.PerspectiveCamera(60, 3 / 2, 1, 1000)
   camera.position.set(16, 6, 12)
   camera.lookAt(new THREE.Vector3(0, -1, -2))
   scene.add(camera)

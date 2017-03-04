@@ -4,11 +4,27 @@
 <head>
   <meta charset="UTF-8">
   <title>mq-webgl-2</title>
+  <link type="text/css" rel="stylesheet" href="../../public/css/materialize.min.css" media="screen,projection" />
   <script type="text/javascript" src="../../public/js/three.js"></script>
 </head>
 
 <body>
-  <canvas id="mainCanvas" width="800px" height="600px"></canvas>
+  <nav class="blue-grey">
+    <div class="nav-wrapper">
+      <a href="../../../index.html" class="brand-logo center">ECharts & WebVR 学院学习记录</a>
+    </div>
+  </nav>
+  <p></p>
+  <div class="container">
+    <div class="row">
+      <div class="col s2">
+        <a href="../../../index.html" class="waves-effect waves-light btn blue-grey darken-1">回到首页</a>
+      </div>
+      <div class="col s10">
+        <canvas id="mainCanvas" width="800px" height="600px"></canvas>
+      </div>
+    </div>
+  </div>
   <script>
     (function () {
       // scene
@@ -16,7 +32,7 @@
 
       // create a camera
       //  fov, aspect, near, far
-      const camera = new THREE.PerspectiveCamera(40, 4 / 3, 5, 2000);
+      const camera = new THREE.PerspectiveCamera(40, 3 / 2, 5, 2000);
       const cameraPosition = [22, 10, 25];
       camera.position.set(...cameraPosition);
       camera.lookAt(new THREE.Vector3(0, 0, 0));

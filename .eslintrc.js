@@ -8,10 +8,6 @@ module.exports = {
         "sourceType": "module"
     },
     "rules": {
-        "indent": [
-            "error",
-            "tab"
-        ],
         "linebreak-style": [
             "error",
             "unix"
@@ -23,6 +19,8 @@ module.exports = {
         "semi": [
             "error",
             "never"
-        ]
+        ],
+        "no-unused-vars": 0,
+        "no-undef": 0
     }
 };

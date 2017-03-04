@@ -31,7 +31,7 @@
       renderer.shadowMap.enabled = true;
       // renderer.shadowMapSoft = true;
 
-      var carTexture = THREE.ImageUtils.loadTexture('./img/test.jpg', {}, function () {
+      const carTexture = THREE.ImageUtils.loadTexture('./img/test.jpg', {}, function () {
         renderer.render(scene, camera);
       });
       const carMaterial = new THREE.MeshLambertMaterial({
@@ -39,7 +39,7 @@
         // wireframe: true
       });
 
-      var wheelTexture = THREE.ImageUtils.loadTexture('./img/6.jpeg', {}, function () {
+      const wheelTexture = THREE.ImageUtils.loadTexture('./img/6.jpeg', {}, function () {
         renderer.render(scene, camera);
       });
       const wheelMaterial = new THREE.MeshLambertMaterial({
@@ -66,10 +66,14 @@
         scene.add(torus);
       })
 
+      
       // plane
+      const planeTexture = THREE.ImageUtils.loadTexture('./img/f1.jpeg', {}, function () {
+        renderer.render(scene, camera);
+      });
       const planeGeometry = new THREE.PlaneGeometry(80, 50);
       const planeMaterial = new THREE.MeshLambertMaterial({
-        color: 0xD1ED98,
+        map: planeTexture
         // wireframe: true
       });
       const plane = new THREE.Mesh(planeGeometry, planeMaterial);

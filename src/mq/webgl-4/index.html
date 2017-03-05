@@ -55,11 +55,17 @@
       const renderer = new THREE.WebGLRenderer({
         canvas: document.getElementById('mainCanvas'),
         antialias: true, //反锯齿
+        precision: 'highp' // highp/mediump/lowp
       });
       renderer.setClearColor(0x666666);
       renderer.shadowMap.enabled = true;
       // renderer.shadowMapSoft = true;
 
+      // show axes in the screen
+      const axes = new THREE.AxisHelper(20);
+      scene.add(axes);
+
+      // car 
       const carTexture = THREE.ImageUtils.loadTexture('../img/car.jpg', {}, function () {
         renderer.render(scene, camera);
       });
@@ -67,8 +73,13 @@
         map: carTexture
         // wireframe: true
       });
+      const cubeGeometry = new THREE.BoxGeometry(10, 5, 5);
+      const cube = new THREE.Mesh(cubeGeometry, carMaterial);
+      cube.castShadow = true;
+      scene.add(cube);
 
-      const wheelTexture = THREE.ImageUtils.loadTexture('../img/wheel.jpeg', {}, function () {
+      // wheel
+      const wheelTexture = THREE.ImageUtils.loadTexture('../img/wheel.jpeg', {}, () => {
         renderer.render(scene, camera);
       });
       const wheelMaterial = new THREE.MeshLambertMaterial({
@@ -76,17 +87,6 @@
         // wireframe: true
       });
 
-      // show axes in the screen
-      const axes = new THREE.AxisHelper(20);
-      scene.add(axes);
-
-      // create a cube
-      const cubeGeometry = new THREE.BoxGeometry(10, 5, 5);
-      const cube = new THREE.Mesh(cubeGeometry, carMaterial);
-      cube.castShadow = true;
-      scene.add(cube);
-
-      // wheel
       const wheelPosition = [[-3, -2.5, 2.3], [3, -2.5, 2.3], [-3, -2.5, -2.3], [3, -2.5, -2.3]];
       wheelPosition.forEach((pos) => {
         let torus = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.5, 120, 180), wheelMaterial);
@@ -95,9 +95,8 @@
         scene.add(torus);
       })
 
-
       // plane
-      const planeTexture = THREE.ImageUtils.loadTexture('.. /img/plane.jpeg', {}, function () {
+      const planeTexture = THREE.ImageUtils.loadTexture('../img/plane.jpeg', {}, () => {
         renderer.render(scene, camera);
       });
       const planeGeometry = new THREE.PlaneGeometry(80, 50);
@@ -128,7 +127,15 @@
       var spotLightHelper = new THREE.SpotLightHelper(light);
       scene.add(spotLightHelper);
 
-      renderer.render(scene, camera);
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+      }
+      function render() {
+        renderer.render(scene, camera)
+      }
+      render()
+      animate()
     })()
   </script>
 </body>

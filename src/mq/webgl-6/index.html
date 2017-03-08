@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>mq-webgl-2</title>
+  <link type="text/css" rel="stylesheet" href="../../public/css/materialize.min.css" media="screen,projection" />
+  <script type="text/javascript" src="../../public/js/three.js"></script>
+  <script src="../../public/js/TrackballControls.js"></script>
+  <script src="../../public/js/OBJLoader.js"></script>
+</head>
+
+<body>
+  <nav class="blue-grey">
+    <div class="nav-wrapper">
+      <a href="../../../index.html" class="brand-logo center">ECharts & WebVR 学院学习记录</a>
+    </div>
+  </nav>
+  <p></p>
+  <div class="container">
+    <div class="row">
+      <div class="col s2">
+        <a href="../../../index.html" class="waves-effect waves-light btn blue-grey darken-1">回到首页</a>
+      </div>
+      <div class="col s10">
+        <canvas id="mainCanvas" width="800px" height="600px"></canvas>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      // scene
+      const scene = new THREE.Scene();
+
+      // create a camera
+      //  fov, aspect, near, far
+      const camera = new THREE.PerspectiveCamera(40, 4 / 3, 5, 2000);
+      const cameraPosition = [22, 10, 25];
+      camera.position.set(...cameraPosition);
+      camera.lookAt(new THREE.Vector3(0, 0, 0));
+      scene.add(camera);
+
+      const controls = new THREE.TrackballControls(camera);
+      controls.rotateSpeed = 1.0;
+      controls.zoomSpeed = 1.2;
+      controls.panSpeed = 0.8;
+      controls.noZoom = false;
+      controls.noPan = false;
+      controls.staticMoving = true;
+      controls.dynamicDampingFactor = 0.3;
+      controls.keys = [65, 83, 68];
+      controls.addEventListener('change', render);
+
+      // create a render
+      const renderer = new THREE.WebGLRenderer({
+        canvas: document.getElementById('mainCanvas'),
+        antialias: true, //反锯齿
+        precision: 'highp' // highp/mediump/lowp
+      });
+      renderer.setClearColor(0x666666);
+      renderer.shadowMap.enabled = true;
+      // renderer.shadowMapSoft = true;
+
+      var mesh;
+      var loader = new THREE.OBJLoader();
+      loader.load('../models/city.obj', function (obj) {
+        obj.traverse(function (child) {
+          if (child instanceof THREE.Mesh) {
+            child.material.side = THREE.DoubleSide;
+          }
+        });
+
+        mesh = obj;
+        scene.add(obj);
+      });
+
+      // show axes in the screen
+      const axes = new THREE.AxisHelper(20);
+      scene.add(axes);
+
+
+      // add light
+      const ambientLight = new THREE.AmbientLight(0x666666);
+      scene.add(ambientLight);
+
+      var light = new THREE.SpotLight(0x7f7f7f);
+      light.position.set(-4, 11, 13);
+      light.castShadow = true;
+
+      light.shadow.mapSize.width = 4096;
+      light.shadow.mapSize.height = 4096;
+
+      scene.add(light);
+
+      var spotLightHelper = new THREE.SpotLightHelper(light);
+      scene.add(spotLightHelper);
+
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+      }
+      function render() {
+        renderer.render(scene, camera);
+      }
+
+      render()
+      animate()
+    })()
+  </script>
+</body>
+
+</html>

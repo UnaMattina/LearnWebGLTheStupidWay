@@ -2,111 +2,126 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <title>mq-webgl-2</title>
-  <link type="text/css" rel="stylesheet" href="../../public/css/materialize.min.css" media="screen,projection" />
-  <script type="text/javascript" src="../../public/js/three.js"></script>
-  <script src="../../public/js/TrackballControls.js"></script>
-  <script src="../../public/js/OBJLoader.js"></script>
+	<title>three.js webgl - OBJLoader + MTLLoader</title>
+	<meta charset="utf-8">
+
+	<link type="text/css" rel="stylesheet" href="../../public/css/materialize.min.css" media="screen,projection" />
+
 </head>
 
 <body>
-  <nav class="blue-grey">
-    <div class="nav-wrapper">
-      <a href="../../../index.html" class="brand-logo center">ECharts & WebVR 学院学习记录</a>
-    </div>
-  </nav>
-  <p></p>
-  <div class="container">
-    <div class="row">
-      <div class="col s2">
-        <a href="../../../index.html" class="waves-effect waves-light btn blue-grey darken-1">回到首页</a>
-      </div>
-      <div class="col s10">
-        <canvas id="mainCanvas" width="800px" height="600px"></canvas>
-      </div>
-    </div>
-  </div>
-  <script>
-    (function () {
-      // scene
-      const scene = new THREE.Scene();
+	<nav class="blue-grey">
+		<div class="nav-wrapper">
+			<a href="../../../index.html" class="brand-logo center">ECharts & WebVR 学院学习记录</a>
+		</div>
+	</nav>
+	<p></p>
+	<div class="container">
+		<div class="row">
+			<div class="col s2">
+				<a href="../../../index.html" class="waves-effect waves-light btn blue-grey darken-1">回到首页</a>
+			</div>
+			<div class="col s10">
+				<canvas id="mainCanvas" width="800px" height="600px"></canvas>
+			</div>
+		</div>
+	</div>
 
-      // create a camera
-      //  fov, aspect, near, far
-      const camera = new THREE.PerspectiveCamera(40, 4 / 3, 5, 2000);
-      const cameraPosition = [22, 10, 25];
+	<script type="text/javascript" src="../../public/js/three.js"></script>
+	<script src="../../public/js/TrackballControls.js"></script>
+
+	<script src="../../public/js/DDSLoader.js"></script>
+	<script src="../../public/js/MTLLoader.js"></script>
+	<script src="../../public/js/OBJLoader.js"></script>
+
+
+
+	<script>
+		(function () {
+			// scene
+			const scene = new THREE.Scene();
+
+			//camera
+			const camera = new THREE.PerspectiveCamera(45, 4 / 3, 1, 2000);
+			const cameraPosition = [23, 29, 252];
       camera.position.set(...cameraPosition);
       camera.lookAt(new THREE.Vector3(0, 0, 0));
-      scene.add(camera);
+			scene.add(camera)
 
-      const controls = new THREE.TrackballControls(camera);
-      controls.rotateSpeed = 1.0;
-      controls.zoomSpeed = 1.2;
-      controls.panSpeed = 0.8;
-      controls.noZoom = false;
-      controls.noPan = false;
-      controls.staticMoving = true;
-      controls.dynamicDampingFactor = 0.3;
-      controls.keys = [65, 83, 68];
-      controls.addEventListener('change', render);
+			// controls
+			const controls = new THREE.TrackballControls(camera);
+			controls.rotateSpeed = 1.0;
+			controls.zoomSpeed = 1.2;
+			controls.panSpeed = 0.8;
+			controls.noZoom = false;
+			controls.noPan = false;
+			controls.staticMoving = true;
+			controls.dynamicDampingFactor = 0.3;
+			controls.keys = [65, 83, 68];
+			controls.addEventListener('change', render);
 
-      // create a render
+			// render
       const renderer = new THREE.WebGLRenderer({
         canvas: document.getElementById('mainCanvas'),
         antialias: true, //反锯齿
         precision: 'highp' // highp/mediump/lowp
       });
       renderer.setClearColor(0x666666);
-      renderer.shadowMap.enabled = true;
-      // renderer.shadowMapSoft = true;
+      renderer.shadowMap.enabled = true;	
 
-      var mesh;
-      var loader = new THREE.OBJLoader();
-      loader.load('../models/city.obj', function (obj) {
-        obj.traverse(function (child) {
-          if (child instanceof THREE.Mesh) {
-            child.material.side = THREE.DoubleSide;
-          }
-        });
+			// light
+			const ambient = new THREE.AmbientLight(0x444444);
+			scene.add(ambient);
 
-        mesh = obj;
-        scene.add(obj);
-      });
+			const directionalLight = new THREE.DirectionalLight(0xffeedd);
+			directionalLight.position.set(0, 0, 1).normalize();
+			scene.add(directionalLight);		
 
-      // show axes in the screen
-      const axes = new THREE.AxisHelper(20);
-      scene.add(axes);
+			// model
+			const onProgress = (xhr) => {
+				if (xhr.lengthComputable) {
+					const percentComplete = xhr.loaded / xhr.total * 100;
+					console.log(Math.round(percentComplete, 2) + '% downloaded');
+				}
+			};
 
+			const onError = function (xhr) { };
 
-      // add light
-      const ambientLight = new THREE.AmbientLight(0x666666);
-      scene.add(ambientLight);
+			THREE.Loader.Handlers.add(/\.dds$/i, new THREE.DDSLoader());
 
-      var light = new THREE.SpotLight(0x7f7f7f);
-      light.position.set(-4, 11, 13);
-      light.castShadow = true;
+			const mtlLoader = new THREE.MTLLoader();
+			mtlLoader.setPath('../models/male02/');
+			mtlLoader.load('male02_dds.mtl', (materials) => {
 
-      light.shadow.mapSize.width = 4096;
-      light.shadow.mapSize.height = 4096;
+				materials.preload();
 
-      scene.add(light);
+				const objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+				objLoader.setPath('../models/male02/');
+				objLoader.load('male02.obj',(object) => {
 
-      var spotLightHelper = new THREE.SpotLightHelper(light);
-      scene.add(spotLightHelper);
+					object.position.y = - 95;
+					scene.add(object);
+					render();
 
-      function animate() {
-        requestAnimationFrame(animate);
-        controls.update();
-      }
-      function render() {
-        renderer.render(scene, camera);
-      }
+				}, onProgress, onError);
 
-      render()
+			});
+
+			function animate() {
+				requestAnimationFrame(animate);
+				controls.update();
+			}
+
+			function render() {
+				renderer.render(scene, camera);
+			}
+
+			render()
       animate()
-    })()
-  </script>
+		})()
+	</script>
+
 </body>
 
 </html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>three.js webgl - OBJLoader + MTLLoader</title>
+  <meta charset="utf-8">
+
+  <link type="text/css" rel="stylesheet" href="../../public/css/materialize.min.css" media="screen,projection" />
+  <style>
+    select {
+      display: inline;
+      color: #000;
+      width: initial;
+      height: initial;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="blue-grey">
+    <div class="nav-wrapper">
+      <a href="../../../index.html" class="brand-logo center">ECharts & WebVR 学院学习记录</a>
+    </div>
+  </nav>
+  <p></p>
+  <div class="container">
+    <div class="row">
+      <div class="col s2">
+        <a href="../../../index.html" class="waves-effect waves-light btn blue-grey darken-1">回到首页</a>
+      </div>
+      <div class="col s10">
+        <canvas id="mainCanvas" width="800px" height="600px"></canvas>
+
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="../../public/js/zepto.js"></script>
+
+  <script type="text/javascript" src="../../public/js/three.js"></script>
+  <script src="../../public/js/TrackballControls.js"></script>
+  <script src="../../public/js/dat.gui.min.js"></script>
+
+  <script src="../../public/js/DDSLoader.js"></script>
+  <script src="../../public/js/MTLLoader.js"></script>
+  <script src="../../public/js/OBJLoader.js"></script>
+
+
+
+  <script>
+    (function () {
+
+      // scene
+      const scene = new THREE.Scene();
+
+      //camera
+      const camera = new THREE.PerspectiveCamera(45, 4 / 3, 1, 2000);
+      const cameraPosition = [85, 54, 240];
+      camera.position.set(...cameraPosition);
+      camera.lookAt(new THREE.Vector3(0, 0, 0));
+      scene.add(camera)
+
+      // render
+      const renderer = new THREE.WebGLRenderer({
+        canvas: document.getElementById('mainCanvas'),
+        antialias: true, //反锯齿
+        precision: 'highp' // highp/mediump/lowp
+      });
+      renderer.setClearColor(0x666666);
+      renderer.shadowMap.enabled = true;
+
+      // controls
+      const controls = new THREE.TrackballControls(camera, renderer.domElement);
+      controls.rotateSpeed = 2.0;
+      controls.zoomSpeed = 1.2;
+      controls.panSpeed = 0.8;
+      controls.noZoom = false;
+      controls.noPan = false;
+      controls.staticMoving = true;
+      controls.dynamicDampingFactor = 0.3;
+      controls.keys = [65, 83, 68];
+      controls.addEventListener('change', render);
+
+      // model
+      const onProgress = (xhr) => {
+        if (xhr.lengthComputable) {
+          const percentComplete = xhr.loaded / xhr.total * 100;
+          console.log(Math.round(percentComplete, 2) + '% downloaded');
+        }
+      };
+      const onError = function (xhr) { };
+      const mtlLoader = new THREE.MTLLoader();
+      mtlLoader.setPath('../models/apple/');
+      mtlLoader.load('apple.mtl', (materials) => {
+
+        materials.preload();
+
+        const objLoader = new THREE.OBJLoader();
+        objLoader.setMaterials(materials);
+        objLoader.setPath('../models/apple/');
+        objLoader.load('apple.obj', (object) => {
+          object.position.y = - 40;
+          object.position.x = -60;
+
+          scene.add(object);
+        }, onProgress, onError);
+
+      });
+
+      // light
+      keyLight = new THREE.SpotLight(0xffffff, 1, 5000, Math.PI / 6, 25);
+      keyLight.position.set(1000, 1000, 500);
+      keyLight.target.position.set(100, 0, 0);
+      scene.add(keyLight);
+
+      fillLight = new THREE.SpotLight(0xffffff, 0.4, 1000, Math.PI / 6, 25);
+      fillLight.position.set(80, -20, -200);
+      fillLight.target.position.set(0, 0, -200);
+      scene.add(fillLight);
+
+      backLight = new THREE.AmbientLight(0xffffff, 0.2);
+      scene.add(backLight);
+
+      let shaderConfig;
+
+      // don't know why data is null when path is './shader.config.json'
+      $.get('http://localhost:3000/db', function (data) {
+        shaderConfig = data;
+        initControl();
+      });
+
+
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        render();
+      }
+
+      function render() {
+        renderer.render(scene, camera);
+      }
+
+      function initControl() {
+        // dat.gui
+        var gui = new dat.GUI();
+
+        let shaderNames = ['none'];
+        for (let shader in shaderConfig) {
+          shaderNames.push(shader);
+        }
+        console.log(shaderNames)
+
+        var option = {
+          'Shader': 'none',
+          'Light X': keyLight.position.x,
+          'Light Y': keyLight.position.y,
+          'Light Z': keyLight.position.z
+        };
+
+        // shader
+        gui.add(option, 'Shader', shaderNames)
+          .onChange(function (value) {
+            useShader(value);
+          });
+      }
+
+      function useShader(val) {
+
+      }
+
+      render()
+      animate()
+    })()
+  </script>
+
+</body>
+
+</html>

@@ -16,7 +16,7 @@
   </style>
 </head>
 
-<body>
+<body onload="init()">
   <nav class="blue-grey">
     <div class="nav-wrapper">
       <a href="../../../index.html" class="brand-logo center">ECharts & WebVR 学院学习记录</a>
@@ -47,20 +47,33 @@
 
 
   <script>
-    (function () {
+    let scene, camera, renderer;
+    let controls;
+    let keyLight, fillLight, backLight;
+    let mtlLoader
 
+    var appleMesh = null;
+    var stemMesh = null;
+    var groupMesh = null;
+    var appleMat = null;
+    var stemMat = null;
+
+    var shaders = [];
+    var shaderConfig = null;
+
+    function init() {
       // scene
-      const scene = new THREE.Scene();
+      scene = new THREE.Scene();
 
-      //camera
-      const camera = new THREE.PerspectiveCamera(45, 4 / 3, 1, 2000);
-      const cameraPosition = [85, 54, 240];
+      // camera
+      camera = new THREE.PerspectiveCamera(45, 4 / 3, 1, 2000);
+      cameraPosition = [85, 54, 240];
       camera.position.set(...cameraPosition);
       camera.lookAt(new THREE.Vector3(0, 0, 0));
       scene.add(camera)
 
       // render
-      const renderer = new THREE.WebGLRenderer({
+      renderer = new THREE.WebGLRenderer({
         canvas: document.getElementById('mainCanvas'),
         antialias: true, //反锯齿
         precision: 'highp' // highp/mediump/lowp
@@ -69,7 +82,7 @@
       renderer.shadowMap.enabled = true;
 
       // controls
-      const controls = new THREE.TrackballControls(camera, renderer.domElement);
+      controls = new THREE.TrackballControls(camera, renderer.domElement);
       controls.rotateSpeed = 2.0;
       controls.zoomSpeed = 1.2;
       controls.panSpeed = 0.8;
@@ -79,32 +92,6 @@
       controls.dynamicDampingFactor = 0.3;
       controls.keys = [65, 83, 68];
       controls.addEventListener('change', render);
-
-      // model
-      const onProgress = (xhr) => {
-        if (xhr.lengthComputable) {
-          const percentComplete = xhr.loaded / xhr.total * 100;
-          console.log(Math.round(percentComplete, 2) + '% downloaded');
-        }
-      };
-      const onError = function (xhr) { };
-      const mtlLoader = new THREE.MTLLoader();
-      mtlLoader.setPath('../models/apple/');
-      mtlLoader.load('apple.mtl', (materials) => {
-
-        materials.preload();
-
-        const objLoader = new THREE.OBJLoader();
-        objLoader.setMaterials(materials);
-        objLoader.setPath('../models/apple/');
-        objLoader.load('apple.obj', (object) => {
-          object.position.y = - 40;
-          object.position.x = -60;
-
-          scene.add(object);
-        }, onProgress, onError);
-
-      });
 
       // light
       keyLight = new THREE.SpotLight(0xffffff, 1, 5000, Math.PI / 6, 25);
@@ -120,56 +107,147 @@
       backLight = new THREE.AmbientLight(0xffffff, 0.2);
       scene.add(backLight);
 
-      let shaderConfig;
+      addModel();
+      initControl();
+      animate();
+    }
 
+    function addModel() {
+      // model
+      const onProgress = (xhr) => {
+        if (xhr.lengthComputable) {
+          const percentComplete = xhr.loaded / xhr.total * 100;
+          console.log(Math.round(percentComplete, 2) + '% downloaded');
+        }
+      };
+
+      const onError = function (xhr) { };
+
+      mtlLoader = new THREE.MTLLoader();
+      mtlLoader.setPath('../models/apple/');
+      mtlLoader.load('apple.mtl', (materials) => {
+        materials.preload();
+
+        // model loader
+        var objLoader = new THREE.OBJLoader();
+        objLoader.setMaterials(materials);
+        objLoader.setPath('../models/apple/');
+        objLoader.load('apple.obj', (obj) => {
+          obj.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+              if (!appleMesh) {
+                appleMesh = child;
+                appleMat = appleMesh.material;
+              }
+              else {
+                stemMesh = child;
+                stemMat = stemMesh.material;
+              }
+            }
+          });
+
+          obj.position.set(-50, -50, 0);
+          scene.add(obj);
+        });
+      });
+
+    }
+
+    function initControl() {
       // don't know why data is null when path is './shader.config.json'
       $.get('http://localhost:3000/db', function (data) {
         shaderConfig = data;
-        initControl();
-      });
-
-
-      function animate() {
-        requestAnimationFrame(animate);
-        controls.update();
-        render();
-      }
-
-      function render() {
-        renderer.render(scene, camera);
-      }
-
-      function initControl() {
-        // dat.gui
         var gui = new dat.GUI();
-
-        let shaderNames = ['none'];
+        const shaderNames = ['none'];
         for (let shader in shaderConfig) {
           shaderNames.push(shader);
         }
-        console.log(shaderNames)
 
         var option = {
-          'Shader': 'none',
-          'Light X': keyLight.position.x,
-          'Light Y': keyLight.position.y,
-          'Light Z': keyLight.position.z
+          'Shader': 'none'
         };
-
         // shader
         gui.add(option, 'Shader', shaderNames)
           .onChange(function (value) {
             useShader(value);
           });
+      });
+    }
+
+
+    function useShader(name) {
+      console.log(keyLight.position)
+      var lightUniform = {
+        type: 'v3',
+        value: keyLight.position
+      };
+
+      setShader('apple', appleMesh, {
+        uniforms: {
+          color: {
+            type: 'v3',
+            value: new THREE.Color('#f55c1f')
+          },
+          light: lightUniform
+        }
+      });
+
+      setShader('stem', stemMesh, {
+        uniforms: {
+          color: {
+            type: 'v3',
+            value: new THREE.Color('#60371b')
+          },
+          light: lightUniform
+        }
+      });
+
+      function setShader(meshName, mesh, qualifiers) {
+
+        var config = shaderConfig[name][meshName];
+
+        if (shaders[name]) { // use pre-loaded shader
+          mesh.material = shaders[name][meshName];
+        } else {
+          // load
+          $.get('./shader/' + config.path + '.vs', (vs) => {
+            $.get(
+              './shader/' + config.path + '.fs', (fs) => {
+                appleShader(vs, fs);
+              }
+            )
+          })
+        }
+
+        function appleShader(vs, fs) {
+          var material = new THREE.ShaderMaterial({
+            vertexShader: vs,
+            fragmentShader: fs,
+            uniforms: qualifiers.uniforms
+          });
+          mesh.material = material;
+
+          if (!shaders[name]) {
+            shaders[name] = {};
+          }
+          shaders[name][meshName] = material;
+          console.log(name + ',' + meshName)          
+          console.log(shaders[name][meshName])
+        }
+
       }
 
-      function useShader(val) {
+    }
 
-      }
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      render();
+    }
 
-      render()
-      animate()
-    })()
+    function render() {
+      renderer.render(scene, camera);
+    }
   </script>
 
 </body>

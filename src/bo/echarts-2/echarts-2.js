@@ -1,5 +1,5 @@
 // 基于准备好的dom，初始化echarts实例
-const myChart = echarts.init(document.getElementById('main'));
+const myChart = echarts.init(document.getElementById('main'))
 
 // 指定图表的配置项和数据
 const option = {
@@ -111,7 +111,7 @@ const option = {
   textStyle: {
     fontFamily: 'monospace'
   }
-};
+}
 
 // 使用刚指定的配置项和数据显示图表。
-myChart.setOption(option);
+myChart.setOption(option)

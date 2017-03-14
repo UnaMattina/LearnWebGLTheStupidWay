@@ -1,5 +1,5 @@
 // 基于准备好的dom，初始化echarts实例
-const myChart = echarts.init(document.getElementById('main'));
+const myChart = echarts.init(document.getElementById('main'))
 
 // 指定图表的配置项和数据
 const option = {
@@ -63,7 +63,7 @@ const option = {
       data: [5, 5.5, 8.25, 11.25, 15.75, 25.5, 50.75, 58.5, 57.5, 41.25, 30, 15.5]
     }
   ]
-};
+}
 
 // 使用刚指定的配置项和数据显示图表。
-myChart.setOption(option);
+myChart.setOption(option)
